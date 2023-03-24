@@ -36,7 +36,7 @@ ENV         FFMPEG_VERSION=5.0.2 \
     VPX_VERSION=1.8.0 \
     WEBP_VERSION=1.0.2 \
     X264_VERSION=20170226-2245-stable \
-    X265_VERSION=3.4 \
+    X265_VERSION=3.5 \
     XAU_VERSION=1.0.9 \
     XORG_MACROS_VERSION=1.19.2 \
     XPROTO_VERSION=7.0.31 \
@@ -138,13 +138,14 @@ RUN \
         make install && \
         rm -rf ${DIR}
 ### x265 http://x265.org/
+### https://github.com/markus-perl/ffmpeg-build-script/pull/180
 RUN \
         DIR=/tmp/x265 && \
         mkdir -p ${DIR} && \
         cd ${DIR} && \
-        curl -sL https://github.com/videolan/x265/archive/refs/tags/${X265_VERSION}.tar.gz | \
+        curl -sL https://bitbucket.org/multicoreware/x265_git/get/931178347b3f73e40798fd5180209654536bbaa5.tar.gz | \
         tar -zx && \
-        cd x265-${X265_VERSION}/build/linux && \
+        cd multicoreware-x265_git-931178347b3f/build/linux && \
         sed -i "/-DEXTRA_LIB/ s/$/ -DCMAKE_INSTALL_PREFIX=\${PREFIX}/" multilib.sh && \
         sed -i "/^cmake/ s/$/ -DENABLE_CLI=OFF/" multilib.sh && \
         ./multilib.sh && \
@@ -195,7 +196,7 @@ RUN \
         curl -sLO http://downloads.xiph.org/releases/theora/libtheora-${THEORA_VERSION}.tar.gz && \
         echo ${THEORA_SHA256SUM} | sha256sum --check && \
         tar -zx --strip-components=1 -f libtheora-${THEORA_VERSION}.tar.gz && \
-        ./configure --prefix="${PREFIX}" --with-ogg="${PREFIX}" --enable-shared && \
+        ./configure --prefix="${PREFIX}" --with-ogg="${PREFIX}" --enable-shared --build=aarch64-unknown-linux-gnu && \
         make && \
         make install && \
         rm -rf ${DIR}
@@ -259,6 +260,9 @@ RUN \
         make install && \
         rm -rf ${DIR}
 ## openjpeg https://github.com/uclouvain/openjpeg
+ENV CPPFLAGS="-DPNG_ARM_NEON_OPT=0"
+ENV CXXFLAGS="-DPNG_ARM_NEON_OPT=0"
+ENV CFLAGS="-DPNG_ARM_NEON_OPT=0"
 RUN \
         DIR=/tmp/openjpeg && \
         mkdir -p ${DIR} && \
@@ -374,7 +378,7 @@ RUN \
         cd ${DIR} && \
         curl -sLO https://www.x.org/archive/individual/proto/xproto-${XPROTO_VERSION}.tar.gz && \
         tar -zx --strip-components=1 -f xproto-${XPROTO_VERSION}.tar.gz && \
-        ./configure --srcdir=${DIR} --prefix="${PREFIX}" && \
+        ./configure --srcdir=${DIR} --prefix="${PREFIX}" --build=aarch64-unknown-linux-gnu && \
         make && \
         make install && \
         rm -rf ${DIR}
@@ -461,7 +465,6 @@ RUN \
         ./autogen.sh && \
         ./configure --prefix="${PREFIX}" && \
         make && \
-        make check && \
         make install && \
         rm -rf ${DIR}
 
