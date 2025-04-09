@@ -78,8 +78,8 @@ RUN         libDeps="libgomp \
                     xvidcore-static \
                     xvidcore-dev \
                     # https://github.com/mstorsjo/fdk-aac
-                    fdk-aac \
-                    fdk-aac-dev \
+                    # fdk-aac \
+                    # fdk-aac-dev \
                     # https://github.com/uclouvain/openjpeg
                     openjpeg \
                     openjpeg-tools \
@@ -184,6 +184,14 @@ RUN /tmp/workdir/build_source.sh
 # # libevent && libevent-dev has usr/lib/libevent_pthreads ???
 # ## libbluray - Requires libxml, freetype, and fontconfig
 RUN /tmp/workdir/generate-source-of-truth-ffmpeg-versions.py --library-list libpthread-stubs,libbluray,libaribb24
+RUN /tmp/workdir/download_tarballs.sh
+RUN /tmp/workdir/build_source.sh
+
+# There seems to be an issue in the native fdk-aac library when encoding HE-AAC v2. It will error out with
+# following error:
+#     [libfdk_aac @ 0x7fda7689e940] Unable to set the AOT 29: Invalid config
+#     [aost#0:0/libfdk_aac @ 0x7fda768b2940] Error while opening encoder - maybe incorrect parameters such as bit_rate, rate, width or height.
+RUN /tmp/workdir/generate-source-of-truth-ffmpeg-versions.py --library-list libfdk-aac
 RUN /tmp/workdir/download_tarballs.sh
 RUN /tmp/workdir/build_source.sh
 
